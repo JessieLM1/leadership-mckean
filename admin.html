@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Leadership McKean — Graduate Credential Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green-dark: #1a5c0d;
+    --green-mid: #2e7d1e;
+    --green-light: #5cad3a;
+    --green-pale: #eaf7e2;
+    --blue: #4da6e0;
+    --text: #1a1a1a;
+    --text-muted: #555;
+    --border: #ddeedd;
+    --bg: #f7faf5;
+    --white: #fff;
+  }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 4rem;
+  }
+
+  header {
+    background: var(--green-dark);
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  header img { width: 44px; height: 44px; object-fit: contain; }
+  header .htext .top { color: #a8d98a; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+  header .htext .bot { color: #fff; font-size: 16px; font-weight: 600; font-family: 'Lora', serif; }
+
+  .container { max-width: 680px; margin: 0 auto; padding: 0 1.5rem; }
+
+  .page-title {
+    margin: 2rem 0 1.5rem;
+    text-align: center;
+  }
+  .page-title h2 { font-family: 'Lora', serif; font-size: 1.6rem; color: var(--green-dark); margin-bottom: 0.25rem; }
+  .page-title p { color: var(--text-muted); font-size: 14px; }
+
+  /* Progress bar */
+  .progress-wrap { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 2rem; }
+  .prog-step { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .prog-circle {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--white);
+    color: #aaa;
+    font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .prog-circle.active { border-color: var(--green-mid); background: var(--green-mid); color: #fff; }
+  .prog-circle.done { border-color: var(--green-light); background: var(--green-pale); color: var(--green-dark); }
+  .prog-label { font-size: 11px; color: #aaa; text-align: center; max-width: 70px; }
+  .prog-label.active { color: var(--green-dark); font-weight: 600; }
+  .prog-line { width: 48px; height: 2px; background: var(--border); margin-bottom: 22px; transition: background 0.2s; }
+  .prog-line.done { background: var(--green-light); }
+
+  /* Cards */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.75rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 12px rgba(30,100,20,0.05);
+  }
+  .card-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--green-mid); font-weight: 600; margin-bottom: 1.25rem;
+  }
+
+  .field { margin-bottom: 1rem; }
+  .field label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 5px; font-weight: 500; }
+  .field input, .field select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--green-light); background: #fff; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .id-row {
+    display: flex; gap: 8px; align-items: flex-end;
+  }
+  .id-row .field { flex: 1; margin-bottom: 0; }
+  .gen-btn {
+    background: var(--green-pale);
+    color: var(--green-dark);
+    border: 1px solid var(--green-light);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .gen-btn:hover { background: #d4f0c4; }
+
+  .slug-preview {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    padding: 6px 10px;
+    background: var(--bg);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    word-break: break-all;
+  }
+  .slug-preview strong { color: var(--green-dark); }
+
+  /* Buttons */
+  .btn-primary {
+    background: var(--green-mid);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    width: 100%;
+    margin-top: 0.5rem;
+    transition: background 0.15s;
+  }
+  .btn-primary:hover { background: var(--green-dark); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--green-mid);
+    border: 1.5px solid var(--green-light);
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .btn-secondary:hover { background: var(--green-pale); }
+
+  /* Step panels */
+  .step-panel { display: none; }
+  .step-panel.active { display: block; }
+
+  /* Output areas */
+  .output-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 260px;
+    overflow-y: auto;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .output-email {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    font-size: 14px;
+    font-family: inherit;
+    white-space: pre-wrap;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .action-row {
+    display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;
+  }
+
+  .copy-action {
+    background: var(--green-pale);
+    color: var(--green-dark);
+    border: 1px solid var(--green-light);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .copy-action:hover { background: #d4f0c4; }
+
+  .download-action {
+    background: var(--green-mid);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .download-action:hover { background: var(--green-dark); }
+
+  .instruction-box {
+    background: #fffbe6;
+    border: 1px solid #f0d060;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #5a4a00;
+    margin-bottom: 1.25rem;
+  }
+  .instruction-box ol { margin-left: 1.25rem; }
+  .instruction-box li { margin-bottom: 4px; }
+  .instruction-box strong { color: #3a3000; }
+
+  .success-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--green-pale);
+    color: var(--green-dark);
+    border-radius: 99px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .back-link {
+    display: inline-block;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    text-decoration: underline;
+  }
+  .back-link:hover { color: var(--green-mid); }
+
+  .url-display {
+    background: var(--green-pale);
+    border: 1px solid var(--green-light);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--green-dark);
+    word-break: break-all;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="assets/badge.png" alt="Badge" onerror="this.style.display='none'" />
+  <div class="htext">
+    <div class="top">Bradford Area Alliance</div>
+    <div class="bot">Leadership McKean — Admin</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="page-title">
+    <h2>Graduate Credential Generator</h2>
+    <p>Fill in the graduate's info and get everything ready to go in three steps.</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="prog-step">
+      <div class="prog-circle active" id="pc1">1</div>
+      <div class="prog-label active" id="pl1">Graduate info</div>
+    </div>
+    <div class="prog-line" id="pline1"></div>
+    <div class="prog-step">
+      <div class="prog-circle" id="pc2">2</div>
+      <div class="prog-label" id="pl2">Upload to GitHub</div>
+    </div>
+    <div class="prog-line" id="pline2"></div>
+    <div class="prog-step">
+      <div class="prog-circle" id="pc3">3</div>
+      <div class="prog-label" id="pl3">Send email</div>
+    </div>
+  </div>
+
+  <!-- STEP 1: Form -->
+  <div class="step-panel active" id="step1">
+    <div class="card">
+      <div class="card-title">Graduate information</div>
+
+      <div class="row2">
+        <div class="field">
+          <label>First name</label>
+          <input type="text" id="firstName" placeholder="Jane" oninput="updateSlug()" />
+        </div>
+        <div class="field">
+          <label>Last name</label>
+          <input type="text" id="lastName" placeholder="Smith" oninput="updateSlug()" />
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Date earned</label>
+          <input type="date" id="dateEarned" />
+        </div>
+        <div class="field">
+          <label>Cohort year</label>
+          <input type="text" id="cohortYear" placeholder="2026" value="2026" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Credential ID</label>
+        <div class="id-row">
+          <div class="field">
+            <input type="text" id="credId" placeholder="LM-2026-JANE-4821" />
+          </div>
+          <button class="gen-btn" onclick="generateId()">Auto-generate</button>
+        </div>
+      </div>
+
+      <div id="slugPreview" class="slug-preview" style="display:none;">
+        GitHub folder: <strong id="slugText"></strong><br>
+        Graduate URL: <strong id="urlText"></strong>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="goToStep2()">Generate credential files →</button>
+  </div>
+
+  <!-- STEP 2: Upload -->
+  <div class="step-panel" id="step2">
+    <span class="back-link" onclick="goToStep(1)">← Back</span>
+
+    <div class="card">
+      <div class="success-badge">✓ File generated</div>
+      <div class="card-title">Download & upload to GitHub</div>
+
+      <div class="instruction-box">
+        <ol>
+          <li><strong>Download</strong> the file below using the green button.</li>
+          <li>Go to <strong>github.com/leadershipmckean/leadership-mckean</strong></li>
+          <li>Navigate into the <strong>graduates</strong> folder.</li>
+          <li>Click <strong>Add file → Create new file</strong>.</li>
+          <li>In the filename box, type exactly: <strong id="githubPath"></strong></li>
+          <li>Open the downloaded file in Notepad, select all, copy, and paste it into the GitHub editor.</li>
+          <li>Scroll down and click <strong>Commit new file</strong>.</li>
+          <li>Wait 1–2 minutes, then confirm the URL below is live.</li>
+        </ol>
+      </div>
+
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">Graduate's verification URL (live after upload):</p>
+      <div class="url-display" id="liveUrl"></div>
+
+      <div class="action-row">
+        <button class="download-action" onclick="downloadFile()">⬇ Download HTML file</button>
+        <button class="copy-action" onclick="copyHtml()">Copy HTML to clipboard</button>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="goToStep3()">Next: Send the email →</button>
+  </div>
+
+  <!-- STEP 3: Email -->
+  <div class="step-panel" id="step3">
+    <span class="back-link" onclick="goToStep(2)">← Back</span>
+
+    <div class="card">
+      <div class="card-title">Email to send the graduate</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">Copy this and paste it into your email client. Send to the graduate's email address.</p>
+      <div class="output-email" id="emailOutput"></div>
+      <div class="action-row">
+        <button class="copy-action" onclick="copyEmail()">Copy email text</button>
+        <button class="copy-action" onclick="copySubject()">Copy subject line</button>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">Subject: <strong id="emailSubject"></strong></p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">All done!</div>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.7;">Once you've sent the email, <strong id="gradNameDone"></strong> will receive their personal link. Their page walks them through adding the credential to LinkedIn and sharing it as a post — no further action needed from you.</p>
+      <button class="btn-primary" style="margin-top:1rem;background:var(--green-dark);" onclick="startOver()">Generate another credential</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let generatedHtml = '';
+let currentSlug = '';
+let currentUrl = '';
+let gradFullName = '';
+
+function updateSlug() {
+  const first = document.getElementById('firstName').value.trim();
+  const last = document.getElementById('lastName').value.trim();
+  if (!first && !last) { document.getElementById('slugPreview').style.display = 'none'; return; }
+  const slug = (first + '-' + last).toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g,'-');
+  currentSlug = slug;
+  currentUrl = 'https://leadershipmckean.github.io/leadership-mckean/graduates/' + slug + '/';
+  document.getElementById('slugText').textContent = 'graduates/' + slug + '/index.html';
+  document.getElementById('urlText').textContent = currentUrl;
+  document.getElementById('slugPreview').style.display = 'block';
+}
+
+function generateId() {
+  const first = document.getElementById('firstName').value.trim().toUpperCase().substring(0,4) || 'GRAD';
+  const year = document.getElementById('cohortYear').value.trim() || '2026';
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  document.getElementById('credId').value = 'LM-' + year + '-' + first + '-' + rand;
+}
+
+function formatDateLong(val) {
+  if (!val) return 'N/A';
+  const d = new Date(val + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+function formatDateShort(val) {
+  if (!val) return 'N/A';
+  const d = new Date(val + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+}
+
+function goToStep2() {
+  const first = document.getElementById('firstName').value.trim();
+  const last = document.getElementById('lastName').value.trim();
+  const dateVal = document.getElementById('dateEarned').value;
+  const cohort = document.getElementById('cohortYear').value.trim() || '2026';
+  const credId = document.getElementById('credId').value.trim();
+
+  if (!first || !last) { alert('Please enter the graduate\'s first and last name.'); return; }
+  if (!credId) { alert('Please enter or generate a Credential ID.'); return; }
+
+  gradFullName = first + ' ' + last;
+  const slug = (first + '-' + last).toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g,'-');
+  currentSlug = slug;
+  currentUrl = 'https://leadershipmckean.github.io/leadership-mckean/graduates/' + slug + '/';
+
+  const dateLong = formatDateLong(dateVal);
+  const dateShort = formatDateShort(dateVal);
+
+  generatedHtml = buildHtml(gradFullName, cohort, dateLong, dateShort, credId, currentUrl);
+
+  document.getElementById('githubPath').textContent = slug + '/index.html';
+  document.getElementById('liveUrl').textContent = currentUrl;
+
+  goToStep(2);
+}
+
+function goToStep3() {
+  const cohort = document.getElementById('cohortYear').value.trim() || '2026';
+  const subject = 'Your Leadership McKean credential is ready to share!';
+  document.getElementById('emailSubject').textContent = subject;
+
+  const email = `Congratulations on completing the Leadership McKean Class of ${cohort} program!
+
+Your official credential verification page is now live. Use the link below to add your achievement to your LinkedIn profile and share it with your network:
+
+🎓 Your verification page:
+${currentUrl}
+
+Your page includes everything you need:
+• Your official Leadership McKean Graduate badge (with a download button)
+• Step-by-step instructions for adding the credential to your LinkedIn profile
+• A suggested caption for sharing it as a LinkedIn post
+
+If you have any questions, reply to this email or contact us at leadershipmckean1@gmail.com.
+
+Congratulations again — we're so proud of everything you've accomplished!
+
+Warm regards,
+Bradford Area Alliance
+Leadership McKean Program`;
+
+  document.getElementById('emailOutput').textContent = email;
+  document.getElementById('gradNameDone').textContent = gradFullName;
+  goToStep(3);
+}
+
+function goToStep(n) {
+  document.querySelectorAll('.step-panel').forEach((p,i) => {
+    p.classList.toggle('active', i+1 === n);
+  });
+  for (let i = 1; i <= 3; i++) {
+    const circle = document.getElementById('pc'+i);
+    const label = document.getElementById('pl'+i);
+    circle.className = 'prog-circle' + (i < n ? ' done' : i === n ? ' active' : '');
+    label.className = 'prog-label' + (i === n ? ' active' : '');
+    if (i < 3) {
+      const line = document.getElementById('pline'+i);
+      line.className = 'prog-line' + (i < n ? ' done' : '');
+    }
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function downloadFile() {
+  const blob = new Blob([generatedHtml], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = currentSlug + '-index.html';
+  a.click();
+}
+
+function copyHtml() {
+  navigator.clipboard.writeText(generatedHtml).then(() => alert('HTML copied to clipboard!'));
+}
+
+function copyEmail() {
+  navigator.clipboard.writeText(document.getElementById('emailOutput').textContent).then(() => alert('Email copied!'));
+}
+
+function copySubject() {
+  navigator.clipboard.writeText(document.getElementById('emailSubject').textContent).then(() => alert('Subject copied!'));
+}
+
+function startOver() {
+  document.getElementById('firstName').value = '';
+  document.getElementById('lastName').value = '';
+  document.getElementById('dateEarned').value = '';
+  document.getElementById('cohortYear').value = '2026';
+  document.getElementById('credId').value = '';
+  document.getElementById('slugPreview').style.display = 'none';
+  generatedHtml = '';
+  currentSlug = '';
+  currentUrl = '';
+  gradFullName = '';
+  goToStep(1);
+}
+
+function buildHtml(name, cohort, dateLong, dateShort, credId, pageUrl) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>${name} — Leadership McKean Graduate</title>
+<meta property="og:title" content="${name} | Leadership McKean Graduate" />
+<meta property="og:description" content="Verified Leadership McKean Class of ${cohort} graduate, issued by Bradford Area Alliance." />
+<meta property="og:image" content="https://leadershipmckean.github.io/leadership-mckean/assets/badge.png" />
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--gd:#1a5c0d;--gm:#2e7d1e;--gl:#5cad3a;--gp:#eaf7e2;--tx:#1a1a1a;--tm:#555;--bd:#ddeedd;--bg:#f7faf5}
+body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+header{background:var(--gd);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between}
+header .org{color:#a8d98a;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+header .prog{color:#fff;font-size:15px;font-weight:600}
+.hero{background:linear-gradient(160deg,#1a5c0d 0%,#2e7d1e 60%,#3d9e28 100%);padding:3rem 2rem 4rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(255,255,255,.02) 40px,rgba(255,255,255,.02) 80px)}
+.pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:99px;padding:5px 14px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1.5rem;position:relative}
+.chk{width:14px;height:14px;background:#5cad3a;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.chk::after{content:'';display:block;width:4px;height:7px;border:1.5px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translate(-.5px,-1px)}
+.hero img{width:200px;height:200px;object-fit:contain;filter:drop-shadow(0 8px 24px rgba(0,0,0,.3));margin-bottom:1.5rem}
+.hero h1{font-family:'Lora',serif;font-size:clamp(1.8rem,5vw,2.8rem);font-weight:600;color:#fff;line-height:1.2;margin-bottom:.5rem}
+.hero .sub{color:rgba(255,255,255,.8);font-size:16px}
+main{max-width:720px;margin:-2rem auto 0;padding:0 1.5rem 4rem;position:relative}
+.card{background:#fff;border:1px solid var(--bd);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(30,100,20,.06)}
+.ct{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--gm);font-weight:600;margin-bottom:1rem}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mi span{font-size:11px;color:var(--tm);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:3px}
+.mi strong{font-size:15px;font-weight:600;color:var(--tx)}
+.desc{font-size:15px;color:var(--tm);line-height:1.7;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--bd)}
+.si{font-size:14px;color:var(--tm);margin-bottom:1.25rem;line-height:1.6}
+.tr{display:flex;gap:8px;margin-bottom:1.25rem}
+.tb{padding:7px 16px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--gl);background:transparent;color:var(--gm);transition:all .15s}
+.tb.active{background:var(--gm);color:#fff;border-color:var(--gm)}
+.tp{display:none}.tp.active{display:block}
+.st{display:flex;gap:14px;align-items:flex-start;margin-bottom:1rem}
+.sn{width:28px;height:28px;border-radius:50%;background:var(--gp);color:var(--gd);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.sb{font-size:14px;color:var(--tx);line-height:1.6}
+.sb strong{color:var(--gd)}
+.cf{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--tx);margin-top:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;word-break:break-all}
+.cb{background:var(--gm);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;flex-shrink:0;font-family:inherit}
+.cb:hover{background:var(--gd)}
+.dl{display:inline-flex;align-items:center;gap:8px;background:var(--gp);color:var(--gd);border:1.5px solid var(--gl);border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;text-decoration:none;margin-top:.5rem}
+.dl:hover{background:#d4f0c4}
+footer{text-align:center;padding:2rem;font-size:12px;color:var(--tm);border-top:1px solid var(--bd)}
+footer a{color:var(--gm);text-decoration:none}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="org">Bradford Area Alliance</div><div class="prog">Leadership McKean</div></div>
+</header>
+<div class="hero">
+  <div class="pill"><span class="chk"></span> Verified credential</div><br>
+  <img src="../../assets/badge.png" alt="Leadership McKean Graduate Badge" />
+  <h1>${name}</h1>
+  <p class="sub">Leadership McKean Graduate &nbsp;·&nbsp; Class of ${cohort}</p>
+</div>
+<main>
+  <div class="card">
+    <div class="ct">Credential details</div>
+    <div class="mg">
+      <div class="mi"><span>Graduate</span><strong>${name}</strong></div>
+      <div class="mi"><span>Date earned</span><strong>${dateLong}</strong></div>
+      <div class="mi"><span>Issuing organization</span><strong><a href="https://www.linkedin.com/company/leadership-mckean/" target="_blank" style="color:var(--gm);text-decoration:none;">Leadership McKean</a></strong></div>
+      <div class="mi"><span>Cohort</span><strong>Class of ${cohort}</strong></div>
+      <div class="mi"><span>Credential ID</span><strong>${credId}</strong></div>
+      <div class="mi"><span>Status</span><strong style="color:var(--gm);">&#10003; Active</strong></div>
+    </div>
+    <p class="desc">Leadership McKean is a civic leadership development program of the Bradford Area Alliance, preparing McKean County professionals to lead with purpose, vision, and community commitment.</p>
+  </div>
+  <div class="card">
+    <div class="ct">Share your achievement</div>
+    <p class="si">You've earned this — now show it. Follow the steps below to add your credential to LinkedIn and share it with your network.</p>
+    <div class="tr">
+      <button class="tb active" onclick="showTab('profile',this)">Add to LinkedIn profile</button>
+      <button class="tb" onclick="showTab('post',this)">Share as a post</button>
+    </div>
+    <div class="tp active" id="panel-profile">
+      <div class="st"><div class="sn">1</div><div class="sb">Open LinkedIn and go to your profile. Click <strong>Add profile section</strong> → <strong>Recommended</strong> → <strong>Licenses &amp; certifications</strong>.</div></div>
+      <div class="st"><div class="sn">2</div><div class="sb">Fill in <strong>Name</strong>:<div class="cf"><span>Leadership McKean Graduate</span><button class="cb" onclick="cp('Leadership McKean Graduate',this)">Copy</button></div></div></div>
+      <div class="st"><div class="sn">3</div><div class="sb">Fill in <strong>Issuing organization</strong> — type this exactly and select <strong>Leadership McKean</strong> from the dropdown LinkedIn shows you. This links your credential to the official LinkedIn page.<div class="cf"><span>Leadership McKean</span><button class="cb" onclick="cp('Leadership McKean',this)">Copy</button></div><div style="margin-top:6px;font-size:12px;color:#555;">Can't find it in the dropdown? Visit <a href="https://www.linkedin.com/company/leadership-mckean/" target="_blank" style="color:#2e7d1e;">linkedin.com/company/leadership-mckean</a> first, click Follow, then try again.</div></div></div>
+      <div class="st"><div class="sn">4</div><div class="sb">Set <strong>Issue date</strong> to <strong>${dateShort}</strong>. Leave expiration blank — this credential does not expire.</div></div>
+      <div class="st"><div class="sn">5</div><div class="sb">Fill in <strong>Credential ID</strong>:<div class="cf"><span id="cid">${credId}</span><button class="cb" onclick="cp(document.getElementById('cid').textContent,this)">Copy</button></div></div></div>
+      <div class="st"><div class="sn">6</div><div class="sb">Fill in <strong>Credential URL</strong>:<div class="cf"><span id="curl">${pageUrl}</span><button class="cb" onclick="cp(document.getElementById('curl').textContent,this)">Copy</button></div></div></div>
+      <div class="st"><div class="sn">7</div><div class="sb">Click <strong>Save</strong>. Your credential now appears on your LinkedIn profile.</div></div>
+    </div>
+    <div class="tp" id="panel-post">
+      <div class="st"><div class="sn">1</div><div class="sb">Download your badge image using the button below.</div></div>
+      <div class="st"><div class="sn">2</div><div class="sb">On LinkedIn, click <strong>Start a post</strong> and attach the badge image.</div></div>
+      <div class="st"><div class="sn">3</div><div class="sb">Copy this suggested caption:<div class="cf" style="display:block;line-height:1.6"><span id="cap">Proud to be a Leadership McKean Class of ${cohort} graduate! 🎉 This program, organized by the Bradford Area Alliance, has been an incredible opportunity to grow as a leader and deepen my commitment to McKean County. #LeadershipMcKean #BradfordPA #CivicLeadership</span><button class="cb" style="margin-top:8px" onclick="cp(document.getElementById('cap').textContent,this)">Copy caption</button></div></div></div>
+      <div class="st"><div class="sn">4</div><div class="sb">Add your verification link to the post:<div class="cf"><span id="curl2">${pageUrl}</span><button class="cb" onclick="cp(document.getElementById('curl2').textContent,this)">Copy link</button></div></div></div>
+      <div class="st"><div class="sn">5</div><div class="sb">Click <strong>Post</strong> — congratulations, your achievement is now public!</div></div>
+      <a class="dl" href="../../assets/badge.png" download="LeadershipMcKean_Graduate_Badge.png">⬇ Download badge image</a>
+    </div>
+  </div>
+</main>
+<footer>
+  <p>Issued by <strong>Bradford Area Alliance</strong> &nbsp;·&nbsp; Bradford, PA</p>
+  <p style="margin-top:4px">Questions? Contact <a href="mailto:leadershipmckean1@gmail.com">leadershipmckean1@gmail.com</a></p>
+</footer>
+<script>
+function showTab(n,btn){document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tb').forEach(t=>t.classList.remove('active'));document.getElementById('panel-'+n).classList.add('active');btn.classList.add('active')}
+function cp(t,btn){navigator.clipboard.writeText(t.trim()).then(()=>{const o=btn.textContent;btn.textContent='Copied!';btn.style.background='#1a5c0d';setTimeout(()=>{btn.textContent=o;btn.style.background=''},2000)})}
+<\/script>
+</body>
+</html>`;
+}
+</script>
+</body>
+</html>
